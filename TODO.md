@@ -1,0 +1,27 @@
+# Stats to Store/Compute
+- Who created the match
+- Picked maps
+- Host for picked map
+- Match creation date
+- Match disbanbded date
+- Match lifetime
+- Player join list
+- Player join count
+- Player total time played
+- Player place statistics
+- Average map star rate
+- Average map length
+- Map count by user
+- User host times
+- Number of fails per user
+- Number of passes per user
+- Average user accuracy
+- Average user hit/miss
+- Total user hits
+- Total user misses
+- Max user combo
+- Max lobby combo (by whom)
+- Max user score
+- Max lobby score (By whom)
+- Map mapper statistic
+- Mods played by user
