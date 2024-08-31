@@ -3,13 +3,11 @@ package structs
 import "time"
 
 type MatchEvent struct {
-	Id int `json:"id"`
-
-	Detail MatchEventDetail `json:"detail"`
-
-	Timestamp time.Time       `json:"timestamp"`
-	UserId    *int            `json:"user_id"`
-	Game      *map[string]any `json:"game"`
+	Id        int              `json:"id"`
+	Detail    MatchEventDetail `json:"detail"`
+	Timestamp time.Time        `json:"timestamp"`
+	UserId    *int             `json:"user_id"` // Could be null
+	Game      *map[string]any  `json:"game"`    // Optional
 }
 
 type MatchEventDetail struct {

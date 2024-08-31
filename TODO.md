@@ -1,27 +1,37 @@
 # Stats to Store/Compute
+
+## Per user
+- ❌ Picked maps
+- ❌ Number of maps picked
+- ❌ Join count
+- ❌ Total time played
+- ❌ What places the player landed on each map
+- ❌ Number of times player became host
+- ❌ Number of maps passed
+- ❌ Average accuracy
+- ❌ Average hit/miss
+- ❌ Total hits
+- ❌ Total misses
+- ❌ Max user combo
+- ❌ Max user score
+- ❌ Mods played by user
+
+
+## Lobby Total
 - ❌ Who created the match
 - ❌ Picked maps
-- ❌ Host for picked map
 - ❌ Match creation date
 - ❌ Match disbanded date
 - ❌ Match lifetime
 - ❌ Player join list
-- ❌ Player join count
-- ❌ Player total time played
-- ❌ Player place statistics
 - ❌ Average map star rate
 - ❌ Average map length
-- ❌ Map count by user
-- ❌ User host times
-- ❌ Number of fails per user
-- ❌ Number of passes per user
-- ❌ Average user accuracy
-- ❌ Average user hit/miss
-- ❌ Total user hits
-- ❌ Total user misses
-- ❌ Max user combo
-- ❌ Max lobby combo (by whom)
-- ❌ Max user score
-- ❌ Max lobby score (By whom)
-- ❌ Map mapper statistic
-- ❌ Mods played by user
+- ❌ Number of times this mapper was picked
+
+
+## Map stats
+- ❌ Host for picked map
+
+
+
+

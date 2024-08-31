@@ -4,18 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/SnakeTwix/osu-lobby-inspector/api/structs"
-	"log"
-	"net/http"
+	structs2 "github.com/SnakeTwix/osu-lobby-inspector/internal/api/structs"
 	"strconv"
 )
 
 type MatchData struct {
-	Match  structs.Match        `json:"match"`
-	Events []structs.MatchEvent `json:"events"`
+	Match  structs2.Match        `json:"match"`
+	Events []structs2.MatchEvent `json:"events"`
 
 	// API FIX: User interface
-	Users []map[string]any `json:"users"`
+	Users []structs2.User `json:"users"`
 
 	FirstEventId  int `json:"first_event_id"`
 	LatestEventId int `json:"latest_event_id"`
@@ -33,7 +31,7 @@ func (c *Client) GetMatch(query GetMatchQuery) (*MatchData, error) {
 		return nil, errors.New("no id provided for match query")
 	}
 
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s/matches/%d", c.url, query.MatchId), nil)
+	request, err := c.getRequestV2("GET", fmt.Sprintf("/matches/%d", query.MatchId), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,16 +51,10 @@ func (c *Client) GetMatch(query GetMatchQuery) (*MatchData, error) {
 
 	request.URL.RawQuery = q.Encode()
 
-	if c.authToken == nil {
-		return nil, errors.New("no auth token specified")
-	}
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *c.authToken))
-
 	response, err := c.httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Got match data")
 
 	var matchData MatchData
 	decoder := json.NewDecoder(response.Body)
@@ -97,6 +89,5 @@ func (c *Client) GetFullMatch(id int) (*MatchData, error) {
 	}
 
 	matchData.Events = events
-
 	return matchData, nil
 }

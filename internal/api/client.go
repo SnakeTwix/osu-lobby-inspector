@@ -3,7 +3,9 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/SnakeTwix/osu-lobby-inspector/util"
+	"io"
 	"net/http"
 )
 
@@ -27,6 +29,7 @@ func New(clientId int, clientSecret string) Client {
 }
 
 func (c *Client) GetToken() error {
+	// TODO: get rid of body Map mappings
 	content := map[string]any{
 		"client_id":     c.clientId,
 		"client_secret": c.clientSecret,
@@ -62,4 +65,21 @@ func (c *Client) GetToken() error {
 
 	c.authToken = &stringToken
 	return nil
+}
+
+// Spits out a request object prepended with the v2 api url and sets the Bearer token
+func (c *Client) getRequestV2(method string, url string, body io.Reader) (*http.Request, error) {
+	request, err := http.NewRequest(method, fmt.Sprintf("%s%s", c.url, url), body)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.authToken == nil {
+		return nil, errors.New("no auth token specified")
+	}
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *c.authToken))
+
+	return request, nil
+
 }
