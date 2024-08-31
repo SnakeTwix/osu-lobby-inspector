@@ -1,4 +1,4 @@
-package client
+package api
 
 import (
 	"encoding/json"
@@ -14,6 +14,7 @@ type Client struct {
 	clientSecret string
 	clientId     int
 	authToken    *string
+	httpClient   *http.Client
 }
 
 func New(clientId int, clientSecret string) Client {
@@ -21,6 +22,7 @@ func New(clientId int, clientSecret string) Client {
 		url:          BaseUrl,
 		clientSecret: clientSecret,
 		clientId:     clientId,
+		httpClient:   http.DefaultClient,
 	}
 }
 
@@ -37,7 +39,7 @@ func (c *Client) GetToken() error {
 		return err
 	}
 
-	response, err := http.Post("https://osu.ppy.sh/oauth/token", "application/json", body)
+	response, err := c.httpClient.Post("https://osu.ppy.sh/oauth/token", "application/json", body)
 	if err != nil {
 		return err
 	}
