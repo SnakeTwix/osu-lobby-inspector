@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	structs2 "github.com/SnakeTwix/osu-lobby-inspector/internal/api/structs"
+	"github.com/SnakeTwix/osu-lobby-inspector/internal/api/structs"
 	"strconv"
 )
 
 type MatchData struct {
-	Match  structs2.Match        `json:"match"`
-	Events []structs2.MatchEvent `json:"events"`
+	Match  structs.Match        `json:"match"`
+	Events []structs.MatchEvent `json:"events"`
 
 	// API FIX: User interface
-	Users []structs2.User `json:"users"`
+	Users []structs.User `json:"users"`
 
 	FirstEventId  int `json:"first_event_id"`
 	LatestEventId int `json:"latest_event_id"`
