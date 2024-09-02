@@ -22,7 +22,7 @@ type User struct {
 func (f *StatisticFetcher) GetUser(userId int) (User, error) {
 	//fetchedUser, err := f.client
 
-	user := User{}
+	user := User{UserId: 69}
 
 	return user, nil
 }

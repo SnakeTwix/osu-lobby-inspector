@@ -51,5 +51,16 @@ func (f *StatisticFetcher) GetLobbyStatistic(lobbyId int) (LobbyStatistic, error
 		DisbandedDate: matchData.Match.EndTime,
 	}
 
+	var userIds []int
+
+	for _, user := range matchData.Users {
+		userIds = append(userIds, user.Id)
+	}
+
+	lobbyStats.Users, err = f.GetUsers(userIds)
+	if err != nil {
+		return LobbyStatistic{}, err
+	}
+
 	return lobbyStats, nil
 }
