@@ -52,7 +52,7 @@ func (f *StatisticsFetcher) FetchLobbyStatistics(lobbyId int) (LobbyStatistics, 
 		DisbandedDate: matchData.Match.EndTime,
 	}
 
-	err = lobbyStats.ProcessUsers()
+	err = lobbyStats.processUsers()
 	if err != nil {
 		return LobbyStatistics{}, err
 	}

@@ -43,7 +43,7 @@ func (u *User) String() string {
 	return builder.String()
 }
 
-func (l *LobbyStatistics) ProcessUsers() error {
+func (l *LobbyStatistics) processUsers() error {
 	var users []User
 
 	for _, user := range l.rawMatchData.Users {
@@ -55,21 +55,21 @@ func (l *LobbyStatistics) ProcessUsers() error {
 		for _, event := range l.rawMatchData.Events {
 			switch event.Detail.Type {
 			case "other":
-				processedUser.ProcessGame(&event)
+				processedUser.processGame(&event)
 			case "match-created":
 				// Special case for lobby creator
 				if *event.UserId == user.Id {
-					processedUser.ProcessJoin(&event)
+					processedUser.processJoin(&event)
 				}
 			case "player-joined":
-				processedUser.ProcessJoin(&event)
+				processedUser.processJoin(&event)
 			case "player-left":
-				err := processedUser.ProcessLeft(&event)
+				err := processedUser.processLeft(&event)
 				if err != nil {
 					return fmt.Errorf("match: %d, %w", l.LobbyId, err)
 				}
 			case "host-changed":
-				processedUser.ProcessHost(&event)
+				processedUser.processHost(&event)
 			}
 
 		}
@@ -81,7 +81,7 @@ func (l *LobbyStatistics) ProcessUsers() error {
 	return nil
 }
 
-func (u *User) ProcessGame(event *structs.MatchEvent) {
+func (u *User) processGame(event *structs.MatchEvent) {
 	var userScore structs.Score
 
 	for _, score := range event.Game.Scores {
@@ -99,7 +99,7 @@ func (u *User) ProcessGame(event *structs.MatchEvent) {
 	u.MaxScore = max(u.MaxScore, userScore.Score)
 }
 
-func (u *User) ProcessJoin(event *structs.MatchEvent) {
+func (u *User) processJoin(event *structs.MatchEvent) {
 	if *event.UserId != u.Id {
 		return
 	}
@@ -108,7 +108,7 @@ func (u *User) ProcessJoin(event *structs.MatchEvent) {
 	u.lastJoinTime = &event.Timestamp
 }
 
-func (u *User) ProcessLeft(event *structs.MatchEvent) error {
+func (u *User) processLeft(event *structs.MatchEvent) error {
 	if *event.UserId != u.Id {
 		return nil
 	}
@@ -124,7 +124,7 @@ func (u *User) ProcessLeft(event *structs.MatchEvent) error {
 	return nil
 }
 
-func (u *User) ProcessHost(event *structs.MatchEvent) {
+func (u *User) processHost(event *structs.MatchEvent) {
 	if *event.UserId != u.Id {
 		return
 	}
