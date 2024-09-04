@@ -2,7 +2,6 @@ package osu_lobby_inspector
 
 import (
 	"github.com/SnakeTwix/osu-lobby-inspector/internal/api"
-	"github.com/SnakeTwix/osu-lobby-inspector/internal/api/structs"
 	"log"
 	"time"
 )
@@ -15,7 +14,6 @@ type StatisticsFetcher struct {
 
 type LobbyStatistics struct {
 	rawMatchData  *api.MatchData
-	mapEvents     []structs.MatchEvent
 	LobbyId       int       `json:"lobby_id"`
 	CreatedBy     *User     `json:"created_by"`
 	Users         []User    `json:"users"`
@@ -53,14 +51,6 @@ func (f *StatisticsFetcher) FetchLobbyStatistics(lobbyId int) (LobbyStatistics, 
 		CreationDate:  matchData.Match.StartTime,
 		DisbandedDate: matchData.Match.EndTime,
 	}
-
-	var mapEvents []structs.MatchEvent
-	for _, event := range matchData.Events {
-		if event.Detail.Type == "other" {
-			mapEvents = append(mapEvents, event)
-		}
-	}
-	lobbyStats.mapEvents = mapEvents
 
 	err = lobbyStats.ProcessUsers()
 	if err != nil {
