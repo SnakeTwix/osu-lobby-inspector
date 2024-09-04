@@ -34,7 +34,7 @@ func (l *LobbyStatistics) ProcessUsers() error {
 
 		var userLastJoinTime *time.Time = nil
 		for _, event := range l.rawMatchData.Events {
-			if *event.UserId != user.Id {
+			if event.UserId == nil || *event.UserId != user.Id {
 				continue
 			}
 
