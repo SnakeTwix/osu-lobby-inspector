@@ -9,15 +9,18 @@ import (
 )
 
 type User struct {
-	Id               int           `json:"id"`
-	Username         string        `json:"username"`
-	JoinCount        int           `json:"join_count"`
-	TotalTimeInLobby time.Duration `json:"total_time_in_lobby"`
-	HostCount        int           `json:"host_count"`
-	TotalHits        int           `json:"total_hits"`
-	TotalMisses      int           `json:"total_misses"`
-	MaxCombo         int           `json:"max_combo"`
-	MaxScore         int           `json:"max_score"`
+	Id                int           `json:"id"`
+	Username          string        `json:"username"`
+	Country           string        `json:"country"`
+	JoinCount         int           `json:"join_count"`
+	TotalTimeInLobby  time.Duration `json:"total_time_in_lobby"`
+	TotalGameplayTime time.Duration `json:"total_gameplay_time"`
+	HostCount         int           `json:"host_count"`
+	TotalHits         int           `json:"total_hits"`
+	TotalMisses       int           `json:"total_misses"`
+	MaxCombo          int           `json:"max_combo"`
+	MaxScore          int           `json:"max_score"`
+	MapsPlayed        int           `json:"maps_played"`
 
 	lastJoinTime *time.Time
 
@@ -44,12 +47,13 @@ func (u *User) String() string {
 }
 
 func (l *LobbyStatistics) processUsers() error {
-	var users []User
+	users := make(map[int]User, len(l.rawMatchData.Users))
 
 	for _, user := range l.rawMatchData.Users {
 		processedUser := User{
 			Id:       user.Id,
 			Username: user.Username,
+			Country:  user.CountryCode,
 		}
 
 		for _, event := range l.rawMatchData.Events {
@@ -58,9 +62,7 @@ func (l *LobbyStatistics) processUsers() error {
 				processedUser.processGame(&event)
 			case "match-created":
 				// Special case for lobby creator
-				if *event.UserId == user.Id {
-					processedUser.processJoin(&event)
-				}
+				processedUser.processJoin(&event)
 			case "player-joined":
 				processedUser.processJoin(&event)
 			case "player-left":
@@ -70,11 +72,13 @@ func (l *LobbyStatistics) processUsers() error {
 				}
 			case "host-changed":
 				processedUser.processHost(&event)
+			case "match-disbanded":
+
 			}
 
 		}
 
-		users = append(users, processedUser)
+		users[user.Id] = processedUser
 	}
 
 	l.Users = users
@@ -82,6 +86,11 @@ func (l *LobbyStatistics) processUsers() error {
 }
 
 func (u *User) processGame(event *structs.MatchEvent) {
+	// If the player left the lobby
+	if u.lastJoinTime == nil {
+		return
+	}
+
 	var userScore structs.Score
 
 	for _, score := range event.Game.Scores {
@@ -91,12 +100,16 @@ func (u *User) processGame(event *structs.MatchEvent) {
 		}
 	}
 
+	u.MapsPlayed++
 	u.TotalHits += userScore.Statistics.Count50
 	u.TotalHits += userScore.Statistics.Count100
 	u.TotalHits += userScore.Statistics.Count300
 	u.TotalMisses += userScore.Statistics.CountMiss
 	u.MaxCombo = max(u.MaxCombo, userScore.MaxCombo)
 	u.MaxScore = max(u.MaxScore, userScore.Score)
+
+	gameDuration := event.Game.EndTime.Sub(event.Game.StartTime)
+	u.TotalGameplayTime += gameDuration
 }
 
 func (u *User) processJoin(event *structs.MatchEvent) {
@@ -114,7 +127,7 @@ func (u *User) processLeft(event *structs.MatchEvent) error {
 	}
 
 	if u.lastJoinTime == nil {
-		return errors.New(fmt.Sprintf("encountered player-left before player-join for player %s", u.Username))
+		return errors.New(fmt.Sprintf("encountered player-left before player-joined for player %s", u.Username))
 	}
 
 	lobbySessionDuration := event.Timestamp.Sub(*u.lastJoinTime)
@@ -130,4 +143,13 @@ func (u *User) processHost(event *structs.MatchEvent) {
 	}
 
 	u.HostCount++
+}
+
+func (u *User) processDisbanded(event *structs.MatchEvent) {
+	if u.lastJoinTime != nil {
+		lobbySessionDuration := event.Timestamp.Sub(*u.lastJoinTime)
+		u.TotalTimeInLobby += lobbySessionDuration
+
+		u.lastJoinTime = nil
+	}
 }

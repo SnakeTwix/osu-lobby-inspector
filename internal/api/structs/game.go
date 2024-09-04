@@ -5,8 +5,8 @@ import "time"
 type MatchGame struct {
 	Id int `json:"id"`
 
-	// API FIX: Add score
-	Beatmap map[string]any `json:"beatmap"`
+	// API FIX: Add Beatmaps
+	Beatmap Beatmap `json:"beatmap"`
 
 	BeatmapId   int       `json:"beatmap_id"`
 	StartTime   time.Time `json:"start_time"`

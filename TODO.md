@@ -17,16 +17,16 @@ This is a list of the stats that can be converted to JSON with a simple `json.Ma
 
 
 ## Lobby Total
-- ❌ Who created the match
-- ❌ Picked maps
+- ✅ Who created the match
+- ✅ Picked maps
 - ✅ Match creation date
 - ✅ Match disbanded date
-- ❌ Player join list
+- ✅ Player join list
 - ❌ Number of times mappers were picked
 
 
 ## Map stats
-- ❌ Host for picked map
+- ✅ Host for picked map
 
 
 
