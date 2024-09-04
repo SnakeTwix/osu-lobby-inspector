@@ -62,7 +62,10 @@ func (f *StatisticsFetcher) FetchLobbyStatistics(lobbyId int) (LobbyStatistics, 
 	}
 	lobbyStats.mapEvents = mapEvents
 
-	lobbyStats.ProcessUsers()
+	err = lobbyStats.ProcessUsers()
+	if err != nil {
+		return LobbyStatistics{}, err
+	}
 
 	return lobbyStats, nil
 }

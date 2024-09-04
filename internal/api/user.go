@@ -10,12 +10,12 @@ type GetUserQuery struct {
 }
 
 //func (c *Client) GetUser(query GetUserQuery) (*structs.UserExtended, error) {
-//	if query.UserId == 0 {
+//	if query.Id == 0 {
 //		return nil, errors.New("no user id provided")
 //	}
 //
 //	var requestUrlBuilder strings.Builder
-//	requestUrlBuilder.WriteString(fmt.Sprintf("/users/%d", query.UserId))
+//	requestUrlBuilder.WriteString(fmt.Sprintf("/users/%d", query.Id))
 //
 //	if query.Ruleset != "" {
 //
