@@ -3,20 +3,23 @@ package osu_lobby_inspector
 import (
 	"errors"
 	"fmt"
+	"github.com/SnakeTwix/osu-lobby-inspector/internal/api/structs"
 	"strings"
 	"time"
 )
 
 type User struct {
-	Id               int
-	Username         string
-	JoinCount        int
-	TotalTimeInLobby time.Duration
-	HostCount        int
-	TotalHits        int
-	TotalMisses      int
-	MaxCombo         int
-	MaxScore         int
+	Id               int           `json:"id"`
+	Username         string        `json:"username"`
+	JoinCount        int           `json:"join_count"`
+	TotalTimeInLobby time.Duration `json:"total_time_in_lobby"`
+	HostCount        int           `json:"host_count"`
+	TotalHits        int           `json:"total_hits"`
+	TotalMisses      int           `json:"total_misses"`
+	MaxCombo         int           `json:"max_combo"`
+	MaxScore         int           `json:"max_score"`
+
+	lastJoinTime *time.Time
 
 	// TODO Picked maps
 	// TODO Map Places
@@ -49,32 +52,24 @@ func (l *LobbyStatistics) ProcessUsers() error {
 			Username: user.Username,
 		}
 
-		var userLastJoinTime *time.Time = nil
 		for _, event := range l.rawMatchData.Events {
-			// Special case for lobby creator
-			if event.Detail.Type == "match-created" && *event.UserId == user.Id {
-				userLastJoinTime = &event.Timestamp
-				processedUser.JoinCount++
-			}
-
-			if event.UserId == nil || *event.UserId != user.Id {
-				continue
-			}
-
-			if event.Detail.Type == "player-joined" {
-				processedUser.JoinCount++
-				userLastJoinTime = &event.Timestamp
-			}
-
-			if event.Detail.Type == "player-left" {
-				if userLastJoinTime == nil {
-					return errors.New(fmt.Sprintf("encountered player-left before player-join for player %s, match %d", user.Username, l.LobbyId))
+			switch event.Detail.Type {
+			case "other":
+				processedUser.ProcessGame(&event)
+			case "match-created":
+				// Special case for lobby creator
+				if *event.UserId == user.Id {
+					processedUser.ProcessJoin(&event)
 				}
-
-				lobbySessionDuration := event.Timestamp.Sub(*userLastJoinTime)
-				processedUser.TotalTimeInLobby += lobbySessionDuration
-
-				userLastJoinTime = nil
+			case "player-joined":
+				processedUser.ProcessJoin(&event)
+			case "player-left":
+				err := processedUser.ProcessLeft(&event)
+				if err != nil {
+					return fmt.Errorf("match: %d, %w", l.LobbyId, err)
+				}
+			case "host-changed":
+				processedUser.ProcessHost(&event)
 			}
 
 		}
@@ -84,4 +79,55 @@ func (l *LobbyStatistics) ProcessUsers() error {
 
 	l.Users = users
 	return nil
+}
+
+func (u *User) ProcessGame(event *structs.MatchEvent) {
+	var userScore structs.Score
+
+	for _, score := range event.Game.Scores {
+		if score.UserID == u.Id {
+			userScore = score
+			break
+		}
+	}
+
+	u.TotalHits += userScore.Statistics.Count50
+	u.TotalHits += userScore.Statistics.Count100
+	u.TotalHits += userScore.Statistics.Count300
+	u.TotalMisses += userScore.Statistics.CountMiss
+	u.MaxCombo = max(u.MaxCombo, userScore.MaxCombo)
+	u.MaxScore = max(u.MaxScore, userScore.Score)
+}
+
+func (u *User) ProcessJoin(event *structs.MatchEvent) {
+	if *event.UserId != u.Id {
+		return
+	}
+
+	u.JoinCount++
+	u.lastJoinTime = &event.Timestamp
+}
+
+func (u *User) ProcessLeft(event *structs.MatchEvent) error {
+	if *event.UserId != u.Id {
+		return nil
+	}
+
+	if u.lastJoinTime == nil {
+		return errors.New(fmt.Sprintf("encountered player-left before player-join for player %s", u.Username))
+	}
+
+	lobbySessionDuration := event.Timestamp.Sub(*u.lastJoinTime)
+	u.TotalTimeInLobby += lobbySessionDuration
+
+	u.lastJoinTime = nil
+	return nil
+}
+
+func (u *User) ProcessHost(event *structs.MatchEvent) {
+	if *event.UserId != u.Id {
+		return
+	}
+
+	u.HostCount++
 }

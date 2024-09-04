@@ -7,7 +7,7 @@ type MatchEvent struct {
 	Detail    MatchEventDetail `json:"detail"`
 	Timestamp time.Time        `json:"timestamp"`
 	UserId    *int             `json:"user_id"` // Could be null
-	Game      *map[string]any  `json:"game"`    // Optional
+	Game      *MatchGame       `json:"game"`    // Optional
 }
 
 type MatchEventDetail struct {
