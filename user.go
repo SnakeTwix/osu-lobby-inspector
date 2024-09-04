@@ -60,4 +60,5 @@ func (l *LobbyStatistics) ProcessUsers() error {
 	}
 
 	l.Users = users
+	return nil
 }
