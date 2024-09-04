@@ -2,18 +2,20 @@ package osu_lobby_inspector
 
 import (
 	"github.com/SnakeTwix/osu-lobby-inspector/internal/api"
+	"github.com/SnakeTwix/osu-lobby-inspector/internal/api/structs"
 	"log"
 	"time"
 )
 
-type StatisticFetcher struct {
+type StatisticsFetcher struct {
 	clientId     int
 	clientSecret string
 	client       api.Client
 }
 
-type LobbyStatistic struct {
+type LobbyStatistics struct {
 	rawMatchData  *api.MatchData
+	mapEvents     []structs.MatchEvent
 	LobbyId       int       `json:"lobby_id"`
 	CreatedBy     *User     `json:"created_by"`
 	Users         []User    `json:"users"`
@@ -24,14 +26,14 @@ type LobbyStatistic struct {
 	// TODO Mapper pick count
 }
 
-func NewStatisticFetcher(clientId int, clientSecret string) (*StatisticFetcher, error) {
+func NewStatisticsFetcher(clientId int, clientSecret string) (*StatisticsFetcher, error) {
 	client := api.New(clientId, clientSecret)
 	err := client.GetToken()
 	if err != nil {
 		return nil, err
 	}
 
-	return &StatisticFetcher{
+	return &StatisticsFetcher{
 		clientId:     clientId,
 		clientSecret: clientSecret,
 		client:       client,
@@ -39,19 +41,26 @@ func NewStatisticFetcher(clientId int, clientSecret string) (*StatisticFetcher, 
 
 }
 
-func (f *StatisticFetcher) GetLobbyStatistic(lobbyId int) (LobbyStatistic, error) {
-
+func (f *StatisticsFetcher) FetchLobbyStatistics(lobbyId int) (LobbyStatistics, error) {
 	matchData, err := f.client.GetFullMatch(lobbyId)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	lobbyStats := LobbyStatistic{
+	lobbyStats := LobbyStatistics{
 		rawMatchData:  matchData,
 		LobbyId:       lobbyId,
 		CreationDate:  matchData.Match.StartTime,
 		DisbandedDate: matchData.Match.EndTime,
 	}
+
+	var mapEvents []structs.MatchEvent
+	for _, event := range matchData.Events {
+		if event.Detail.Type == "other" {
+			mapEvents = append(mapEvents, event)
+		}
+	}
+	lobbyStats.mapEvents = mapEvents
 
 	lobbyStats.ProcessUsers()
 
