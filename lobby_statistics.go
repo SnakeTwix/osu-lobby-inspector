@@ -13,6 +13,7 @@ type StatisticFetcher struct {
 }
 
 type LobbyStatistic struct {
+	rawMatchData  *api.MatchData
 	LobbyId       int       `json:"lobby_id"`
 	CreatedBy     *User     `json:"created_by"`
 	Users         []User    `json:"users"`
@@ -46,21 +47,13 @@ func (f *StatisticFetcher) GetLobbyStatistic(lobbyId int) (LobbyStatistic, error
 	}
 
 	lobbyStats := LobbyStatistic{
+		rawMatchData:  matchData,
 		LobbyId:       lobbyId,
 		CreationDate:  matchData.Match.StartTime,
 		DisbandedDate: matchData.Match.EndTime,
 	}
 
-	var userIds []int
-
-	for _, user := range matchData.Users {
-		userIds = append(userIds, user.Id)
-	}
-
-	lobbyStats.Users, err = f.GetUsers(userIds)
-	if err != nil {
-		return LobbyStatistic{}, err
-	}
+	lobbyStats.ProcessUsers()
 
 	return lobbyStats, nil
 }

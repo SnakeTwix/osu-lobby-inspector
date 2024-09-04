@@ -19,25 +19,17 @@ type User struct {
 	// TODO Mods played statistic
 }
 
-func (f *StatisticFetcher) GetUser(userId int) (User, error) {
-	//fetchedUser, err := f.client
-
-	user := User{UserId: 69}
-
-	return user, nil
-}
-
-func (f *StatisticFetcher) GetUsers(userIds []int) ([]User, error) {
+func (l *LobbyStatistic) ProcessUsers() {
 	var users []User
 
-	for _, userId := range userIds {
-		user, err := f.GetUser(userId)
-		if err != nil {
-			return nil, err
+	for _, user := range l.rawMatchData.Users {
+		processedUser := User{
+			UserId:   user.Id,
+			Username: user.Username,
 		}
 
-		users = append(users, user)
+		users = append(users, processedUser)
 	}
 
-	return users, nil
+	l.Users = users
 }
