@@ -75,17 +75,32 @@ func (c *Client) GetFullMatch(id int) (*MatchData, error) {
 		return nil, err
 	}
 
+	trackedUsers := map[int]bool{}
+	for userIndex := range matchData.Users {
+		user := &matchData.Users[userIndex]
+
+		trackedUsers[user.Id] = true
+	}
+
 	events := matchData.Events
 
-	// Fetch until we get all the events for a match
+	// Fetch until we get all the events and users for a match
 	for events[0].Id != matchData.FirstEventId {
 		matchQuery.Before = events[0].Id
-		matchData, err = c.GetMatch(matchQuery)
+		tempMatchData, err := c.GetMatch(matchQuery)
 		if err != nil {
 			return nil, err
 		}
 
-		events = append(matchData.Events, events...)
+		events = append(tempMatchData.Events, events...)
+
+		for userIndex := range tempMatchData.Users {
+			user := &tempMatchData.Users[userIndex]
+			if trackedUsers[user.Id] {
+				trackedUsers[user.Id] = true
+				matchData.Users = append(matchData.Users, *user)
+			}
+		}
 	}
 
 	matchData.Events = events
