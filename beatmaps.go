@@ -12,12 +12,17 @@ func (l *LobbyStatistics) processBeatmaps() {
 
 	var currentHost int
 	for _, event := range l.rawMatchData.Events {
-		if event.Detail.Type == "host-change" {
+		if event.Detail.Type == "host-changed" {
 			currentHost = *event.UserId
 			continue
 		}
 
 		if event.Detail.Type != "other" {
+			continue
+		}
+
+		// Some really dumb stuff can happen, not sure what this is about, but if no scores, ignore
+		if len(event.Game.Scores) == 0 {
 			continue
 		}
 

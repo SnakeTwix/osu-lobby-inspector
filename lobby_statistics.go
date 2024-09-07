@@ -1,7 +1,9 @@
 package osu_lobby_inspector
 
 import (
+	"encoding/json"
 	"github.com/SnakeTwix/osu-lobby-inspector/internal/api"
+	"os"
 	"time"
 )
 
@@ -64,6 +66,9 @@ func (f *StatisticsFetcher) FetchLobbyStatistics(lobbyId int) (LobbyStatistics, 
 	}
 
 	lobbyStats.processBeatmaps()
+
+	jsonContent, _ := json.Marshal(matchData)
+	_ = os.WriteFile("rawData.json", jsonContent, 0666)
 
 	return lobbyStats, nil
 }

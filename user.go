@@ -91,6 +91,11 @@ func (u *User) processGame(event *structs.MatchEvent) {
 		return
 	}
 
+	// Some really dumb stuff can happen, not sure what this is about, but if no scores, ignore
+	if len(event.Game.Scores) == 0 {
+		return
+	}
+
 	var userScore structs.Score
 
 	for _, score := range event.Game.Scores {

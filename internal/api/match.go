@@ -96,7 +96,7 @@ func (c *Client) GetFullMatch(id int) (*MatchData, error) {
 
 		for userIndex := range tempMatchData.Users {
 			user := &tempMatchData.Users[userIndex]
-			if trackedUsers[user.Id] {
+			if !trackedUsers[user.Id] {
 				trackedUsers[user.Id] = true
 				matchData.Users = append(matchData.Users, *user)
 			}
